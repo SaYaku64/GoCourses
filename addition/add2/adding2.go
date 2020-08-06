@@ -8,7 +8,6 @@ package main
 
 import (
 	"fmt"
-	"sync"
 )
 
 // methods for interface for every professions
@@ -73,24 +72,32 @@ func GetInfo(w Worker) (info string) {
 	return
 }
 
-// struct, that is used for getting cache
-type workersCache struct {
-	Workers map[int]Worker
-	sync.Mutex
-}
-
-// checking if id is the same as worker's key from map and printing it
-func (cache *workersCache) GetCache(id int) worker {
-	cache.Lock()
-	defer cache.Unlock()
-
-	if v, ok := cache.Workers[id]; ok {
-		fmt.Println(v)
-		return worker{}
+func typesFromCache(w map[int]Worker) {
+	fmt.Printf("\nTypes of elements from map:\n")
+	fmt.Printf("Map's type: %T\n", w)
+	for _, worker := range w {
+		fmt.Printf("%T\n", worker)
 	}
-	fmt.Println("Cannot find employee with that ID")
-	return worker{}
 }
+
+// // struct, that is used for getting cache
+// type workersCache struct {
+// 	Workers map[int]Worker
+// 	sync.Mutex
+// }
+//
+// // checking if id is the same as worker's key from map and printing it
+// func (cache *workersCache) GetCache(id int) worker {
+// 	cache.Lock()
+// 	defer cache.Unlock()
+//
+// 	if v, ok := cache.Workers[id]; ok {
+// 		fmt.Println(v)
+// 		return worker{}
+// 	}
+// 	fmt.Println("Cannot find employee with that ID")
+// 	return worker{}
+// }
 
 func main() {
 
@@ -171,12 +178,13 @@ func main() {
 		fmt.Println(GetInfo(worker))
 	}
 
-	// making cache from workers' map
-	wC := workersCache{
-		Workers: workers,
-	}
-
-	// calling the function
-	fmt.Println("Employee info from cache:")
-	wC.GetCache(5)
+	typesFromCache(workers)
+	// // making cache from workers' map
+	// wC := workersCache{
+	// 	Workers: workers,
+	// }
+	//
+	// // calling the function
+	// fmt.Println("Employee info from cache:")
+	// wC.GetCache(5)
 }

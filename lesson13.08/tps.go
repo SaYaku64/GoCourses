@@ -18,12 +18,12 @@ type employee struct {
 	info       human
 }
 
-type head struct {
-	departmentName string
-	subordinates   int
-	info           human
-}
+// type head struct {
+// 	departmentName string
+// 	subordinates   int
+// 	info           human
+// }
 
 type myMutex struct {
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }

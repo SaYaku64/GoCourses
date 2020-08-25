@@ -9,20 +9,35 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// server is used from the "lesson17.08/main.go" package/file
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 func main() {
-	MakeRequest()
+	makeRequest()
 }
 
-func MakeRequest() {
+func makeRequest() {
 
-	message := map[string]interface{}{
-		"username": "abc",
-		"userage":  1,
-		"userexp":  1,
+	// message := map[string]string{
+	// 	"username": "abc",
+	// 	"userage":  "1",
+	// 	"userexp":  "1",
+	// }
+
+	message := struct {
+		USERNAME string `json:"username"`
+		USERAGE  string `json:"userage"`
+		USEREXP  string `json:"userexp"`
+	}{
+		USERNAME: "abc",
+		USERAGE:  "1",
+		USEREXP:  "1",
 	}
 
 	bytesRepresentation, err := json.Marshal(message)
@@ -30,44 +45,16 @@ func MakeRequest() {
 		log.Fatalln(err)
 	}
 
-	resp, err := http.Post("http://localhost/postform", "application/json", bytes.NewBuffer(bytesRepresentation))
+	resp, err := http.Post("http://localhost/postform", "application/json", bytes.NewReader(bytesRepresentation))
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(resp)
-	var result map[string]interface{}
 
-	json.NewDecoder(resp.Body).Decode(&result)
+	defer resp.Body.Close()
 
-	log.Println(result)
-	//log.Println(result["data"])
+	if body, err := ioutil.ReadAll(resp.Body); err != nil {
+		log.Fatalln(err)
+	} else {
+		fmt.Println(string(body))
+	}
 }
-
-// package main
-
-// import (
-// 	"bytes"
-// 	"fmt"
-// 	"net/http"
-// )
-
-// func main() {
-// 	data := []byte(`{"ping"}`)
-// 	r := bytes.NewReader(data)
-// 	resp, err := http.Post("http://localhost/pingpost", "application/json", r)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
-// 	defer resp.Body.Close()
-// 	for true {
-
-// 		bs := make([]byte, 1014)
-// 		n, err := resp.Body.Read(bs)
-// 		fmt.Println(string(bs[:n]))
-
-// 		if n == 0 || err != nil {
-// 			break
-// 		}
-// 	}
-// }

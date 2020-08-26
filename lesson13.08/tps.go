@@ -15,6 +15,7 @@ type human struct {
 type employee struct {
 	jobName    string
 	experience float64
+	head       bool
 	info       human
 }
 

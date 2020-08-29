@@ -9,17 +9,18 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"sync"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type user struct {
+	id       uint64
 	name     string
 	email    string
 	password string
 }
 
-var printed bool
 var exist bool
 
 // HashPassword - encoding string
@@ -34,12 +35,52 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+//CacheUsers - type struct, that has mutex for including map of users
+type CacheUsers struct {
+	data map[uint64]user
+	sync.RWMutex
+}
+
+//InitUsers - initialize CacheUsers struct
+func InitUsers() CacheUsers {
+	return CacheUsers{
+		data: make(map[uint64]user),
+	}
+}
+
+//cache of all users
+var cacheUsers = InitUsers()
+
+//returns user from map by id
+func (c *CacheUsers) getUser(id uint64) user {
+	c.RLock()
+	tempUser := c.data[id]
+	c.RUnlock()
+	return tempUser
+}
+
+//adds user to map
+func (c *CacheUsers) setUser(u user) {
+	c.Lock()
+	c.data[u.id] = u
+	c.Unlock()
+}
+
+//gets length of map of users
+func (c *CacheUsers) getLen() uint64 {
+	c.Lock()
+	len := uint64(len(c.data))
+	c.Unlock()
+	return len
+}
+
 func main() {
 	fmt.Println("[Server started]")
-	var usr = make(map[int]user)
 
 	myHash, _ := HashPassword("123")
-	usr[1] = user{"SaYaku", "example@gmail.com", myHash}
+	firstUser := user{0, "SaYaku", "example@gmail.com", myHash}
+
+	cacheUsers.setUser(firstUser)
 
 	// start page, that uses html-file (localhost/)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -55,12 +96,15 @@ func main() {
 		if newName != "" && email != "" && newPass != "" {
 
 			// checking existing account
-			for i := 1; i < len(usr)+1; i++ {
-				if usr[i].name == newName || usr[i].email == email {
+			cacheUsers.RLock()
+			for _, user := range cacheUsers.data {
+				if user.name == newName || user.email == email {
 					fmt.Fprintf(w, "Oops! This name or email is already taken!\n")
 					exist = true
+					break
 				}
 			}
+			cacheUsers.RUnlock()
 
 			//register new user
 			if exist == false {
@@ -68,14 +112,14 @@ func main() {
 				if err != nil {
 					fmt.Fprintf(w, "Error in encoding password!\n%v\n", err)
 				} else {
-					usr[len(usr)+1] = user{newName, email, hash}
+					newUser := user{cacheUsers.getLen(), newName, email, hash}
+					cacheUsers.setUser(newUser)
 					fmt.Fprintf(w, "Successfully registered!\n")
 				}
 			}
 		} else {
 			fmt.Fprintf(w, "You haven't filled all the boxes!\n")
 		}
-
 		exist = false
 		return
 	})
@@ -86,19 +130,17 @@ func main() {
 
 		if name != "" && pass != "" {
 			//checking name and password
-			for i := 1; i < len(usr)+1; i++ {
-				if usr[i].name == name && CheckPasswordHash(pass, usr[i].password) {
+			cacheUsers.RLock()
+			for _, user := range cacheUsers.data {
+				if user.name == name && CheckPasswordHash(pass, user.password) {
 					fmt.Fprintf(w, "Welcome back, %s\n", name)
-					printed = true
-				} else if i == len(usr) && printed == false {
-					fmt.Fprintf(w, "Wrong name or password!\n")
+					break
 				}
 			}
+			cacheUsers.RUnlock()
 		} else {
 			fmt.Fprintf(w, "You haven't filled all the boxes!\n")
 		}
-
-		printed = false
 		return
 	})
 

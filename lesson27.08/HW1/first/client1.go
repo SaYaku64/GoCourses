@@ -50,5 +50,5 @@ func makeRequest(emp employee) {
 		fmt.Println("Struct has been sent.")
 	}
 
-	defer resp.Body.Close()
+	resp.Body.Close()
 }

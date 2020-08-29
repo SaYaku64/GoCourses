@@ -9,6 +9,13 @@ import (
 
 var printed bool
 
+type employee struct {
+	ID       int    `json:"id"`
+	FULLNAME string `json:"name"`
+	KILLER   bool   `json:"killer"`
+	HouRs    int    `json:"hours"`
+}
+
 func main() {
 	fmt.Println("[Server-printer started]")
 
@@ -20,15 +27,21 @@ func main() {
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				fmt.Println(err.Error())
+				return
 			}
-			// resultBody := make(map[string]interface{})
-			var resultBody interface{}
+
+			//resultBody := make(map[string]interface{})
+			fmt.Println("JSON: ", string(body))
+			resultBody := employee{}
+			//var resultBody interface{}
 
 			err = json.Unmarshal(body, &resultBody)
 			if err != nil {
 				fmt.Println(err.Error())
+				return
 			}
-			fmt.Println(resultBody)
+			//fmt.Println(resultBody)
+			fmt.Printf("Struct: %+v\n", resultBody)
 		} else {
 			fmt.Fprintf(w, "\nUnknown content-type! I understand only JSON.")
 		}

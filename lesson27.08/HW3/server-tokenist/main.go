@@ -86,9 +86,6 @@ func main() {
 		//checking name and password
 		for i := 1; i < len(usr)+1; i++ {
 			if usr[i].name == name && CheckPasswordHash(pass, usr[i].password) {
-				//place for creating TOKEN and sending it...
-				//ok, I don't understand, jwt-tokens, so let's do it together
-				//this "token" is silly try to make something that will be sent to client
 				hash, err := HashPassword("AcCeSsAcCePtEd")
 				if err != nil {
 					fmt.Printf("Trouble in hashing!")

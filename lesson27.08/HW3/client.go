@@ -59,20 +59,24 @@ func makeRequest() {
 	} else {
 		if CheckPasswordHash("AcCeSsAcCePtEd", string(body)) {
 			fmt.Println("Yep, Access accepted!")
-			req, err := http.NewRequest("POST", "http://localhost:81/postlog", bytes.NewReader(bytesRepresentation))
+
+			client := &http.Client{}
+			r, err := http.NewRequest(http.MethodPost, "http://localhost:81/postlog", bytes.NewReader(bytesRepresentation)) // URL-encoded payload
 			if err != nil {
 				fmt.Println(err)
 			} else {
-				fmt.Println("Token: ", string(body))
-				req.Header.Set("Content-Type", "application/json")
-				req.Header.Set("Token", string(body))
+				r.Header.Add("Token", string(body))
+				r.Header.Add("Content-Type", "application/json")
 
-				defer req.Body.Close()
+				resp, err := client.Do(r)
+				if err != nil {
+					log.Println(err)
+				}
 
-				if body, err := ioutil.ReadAll(req.Body); err != nil {
+				if body, err := ioutil.ReadAll(resp.Body); err != nil {
 					log.Fatalln(err)
 				} else {
-					fmt.Println(string(body), "dddddd")
+					fmt.Println("Ok? ", string(body))
 				}
 			}
 
@@ -82,3 +86,50 @@ func makeRequest() {
 		}
 	}
 }
+
+// package main
+
+// import (
+// 	"bytes"
+// 	"encoding/json"
+// 	"fmt"
+// 	"log"
+// 	"net/http"
+// )
+
+// func main() {
+// 	//apiUrl := "http://localhost:81/postlog"
+// 	//resource := "/postlog/"
+
+// 	message := struct {
+// 		NAME     string `json:"name"`
+// 		EMAIL    string `json:"email"`
+// 		PASSWORD string `json:"password"`
+// 	}{
+// 		NAME:     "qqq",
+// 		EMAIL:    "qq@qq.qq",
+// 		PASSWORD: "qq",
+// 	}
+
+// 	bytesRepresentation, err := json.Marshal(message)
+// 	if err != nil {
+// 		log.Fatalln(err)
+// 	}
+
+// 	// data := url.Values{}
+// 	// data.Set("name", "foo")
+// 	// data.Set("surname", "bar")
+
+// 	client := &http.Client{}
+// 	r, _ := http.NewRequest(http.MethodPost, "http://localhost:81/postlog", bytes.NewReader(bytesRepresentation)) // URL-encoded payload
+// 	r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
+// 	r.Header.Add("Content-Type", "application/json")
+// 	//r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+// 	resp, err := client.Do(r)
+// 	if err != nil {
+// 		log.Println(err)
+// 	} else {
+// 		fmt.Println(resp.Status)
+// 	}
+// }

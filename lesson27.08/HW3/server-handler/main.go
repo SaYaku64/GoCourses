@@ -32,12 +32,14 @@ func main() {
 	})
 
 	http.HandleFunc("/postlog", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("This is my Token:", r.Header)
-		//head, err := ioutil.ReadAll(r.Header.Get("Token"))
+		fmt.Println("This is my Token:", r.Header.Get("Token"))
+		fmt.Fprintf(w, " Yep! Everything is ok!")
+		// head, err := ioutil.ReadAll(r.Body)
 		// if err != nil {
 		// 	fmt.Println(err.Error())
 		// }
-		// resultBody := make(map[string]string)
+		// //resultBody := make(map[string]string)
+		// var resultBody interface{}
 
 		// // err = json.Unmarshal(head, &resultBody)
 		// // if err != nil {

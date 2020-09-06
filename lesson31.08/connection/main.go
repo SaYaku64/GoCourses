@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Create client
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://user_01:159753@mycluster.sinyp.mongodb.net/?retryWrites=true&w=majority"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://<user>:<password>@<cluster>.sinyp.mongodb.net/?retryWrites=true&w=majority"))
 	if err != nil {
 		log.Fatal(err)
 	}
